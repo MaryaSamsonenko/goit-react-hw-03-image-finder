@@ -4,6 +4,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { apiServices } from "../../services/api";
 import { Searchbar } from "../Searchbar/Searchbar";
 import { ImageGallery } from "../ImageGallery/ImageGallery";
+import { Button } from "../Button/Button";
+import { Container } from "./App.styled";
 
 export class App extends Component {
   state = {
@@ -14,6 +16,7 @@ export class App extends Component {
     showModal: false,
     largeImage: "",
     error: null,
+    totalPages: null,
   };
   handleFofmSubmit = (searchQuery) => {
     return this.setState({ searchQuery });
@@ -29,29 +32,45 @@ export class App extends Component {
   }
   fetchImages = async () => {
     const { searchQuery, page } = this.state;
-    this.setState({ isLoading: true });
+
     try {
-      const hits = await apiServices({ searchQuery, page });
-      if (hits.length === 0) {
+      this.setState({ isLoading: true });
+      const data = await apiServices({ searchQuery, page });
+      if (data.length === 0) {
         toast.warn("Nothing found with your search query");
-        this.setState({ isLoading: false });
+        this.setState({ isLoading: false, totalPages: null });
+        console.log(data);
         return;
       }
+      console.log(data);
       this.setState((prevState) => ({
-        imageCards: [...prevState.imageCards, ...hits],
+        imageCards: [...prevState.imageCards, ...data.hits],
+        totalPages: Math.ceil(data.totalHits / 12),
         page: prevState.page + 1,
       }));
     } catch (error) {
       console.log(error);
       this.setState({ error: error.message });
+    } finally {
+      this.setState({ loading: false });
     }
   };
+
+  handleOnClick = () => {
+    this.fetchImages();
+  };
   render() {
-    const { imageCards } = this.state;
+    const { imageCards, totalPages, isLoading, error, page } = this.state;
+    console.log(page, "page");
+    console.log(totalPages, "totalPages");
     return (
-      <>
+      <Container>
         <Searchbar onSubmit={this.handleFofmSubmit} />
         <ImageGallery imageCards={imageCards} />
+        {totalPages > 1 && totalPages !== page - 1 && (
+          <Button onClick={this.handleOnClick} />
+        )}
+
         <ToastContainer
           theme="dark"
           position="top-center"
@@ -59,7 +78,7 @@ export class App extends Component {
           autoClose={2000}
           transition={Zoom}
         />
-      </>
+      </Container>
     );
   }
 }

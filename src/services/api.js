@@ -6,5 +6,6 @@ const PER_PAGE = 12;
 export const apiServices = async ({ searchQuery, page }) => {
   const url = `${BASE_URL}?${API_KEY}&q=${searchQuery}&image_type=photo&per_page=${PER_PAGE}&page=${page}&orientation=horizontal&safesearch=true`;
   const response = await axios.get(url);
-  return response.data.hits;
+
+  return response.data;
 };
