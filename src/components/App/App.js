@@ -5,6 +5,7 @@ import { apiServices } from "../../services/api";
 import { Searchbar } from "../Searchbar/Searchbar";
 import { ImageGallery } from "../ImageGallery/ImageGallery";
 import { Button } from "../Button/Button";
+import { Modal } from "../Modal/Modal";
 import { Container } from "./App.styled";
 
 export class App extends Component {
@@ -19,7 +20,7 @@ export class App extends Component {
     totalPages: null,
   };
   handleFofmSubmit = (searchQuery) => {
-    return this.setState({ searchQuery });
+    return this.setState({ searchQuery, page: 1, imageCards: [] });
   };
 
   componentDidUpdate(prevProps, prevState) {
@@ -36,18 +37,19 @@ export class App extends Component {
     try {
       this.setState({ isLoading: true });
       const data = await apiServices({ searchQuery, page });
-      if (data.length === 0) {
+      if (data.hits.length === 0) {
         toast.warn("Nothing found with your search query");
         this.setState({ isLoading: false, totalPages: null });
-        console.log(data);
+
         return;
       }
-      console.log(data);
+
       this.setState((prevState) => ({
         imageCards: [...prevState.imageCards, ...data.hits],
         totalPages: Math.ceil(data.totalHits / 12),
         page: prevState.page + 1,
       }));
+      console.log(this.state.largeImage);
     } catch (error) {
       console.log(error);
       this.setState({ error: error.message });
@@ -56,28 +58,52 @@ export class App extends Component {
     }
   };
 
+  setModalImage = (imageLink) => {
+    return this.setState((prevState) => ({ largeImage: imageLink }));
+  };
+  openLargeImage = (imageLink) => {
+    this.setModalImage(imageLink);
+    this.toggleModal();
+  };
+
   handleOnClick = () => {
     this.fetchImages();
   };
+  toggleModal = () => {
+    this.setState(({ showModal }) => ({ showModal: !showModal }));
+  };
   render() {
-    const { imageCards, totalPages, isLoading, error, page } = this.state;
-    console.log(page, "page");
-    console.log(totalPages, "totalPages");
+    const {
+      imageCards,
+      totalPages,
+      isLoading,
+      error,
+      page,
+      showModal,
+      largeImage,
+    } = this.state;
+
     return (
       <Container>
         <Searchbar onSubmit={this.handleFofmSubmit} />
-        <ImageGallery imageCards={imageCards} />
-        {totalPages > 1 && totalPages !== page - 1 && (
-          <Button onClick={this.handleOnClick} />
+        {totalPages > 0 && !error && (
+          <>
+            <ImageGallery
+              imageCards={imageCards}
+              onClick={this.toggleModal}
+              modalOpen={this.openLargeImage}
+            />
+            {totalPages > 1 && totalPages !== page - 1 && (
+              <Button onClick={this.handleOnClick} />
+            )}
+          </>
         )}
-
-        <ToastContainer
-          theme="dark"
-          position="top-center"
-          limit={3}
-          autoClose={2000}
-          transition={Zoom}
-        />
+        {showModal && (
+          <Modal onClose={this.toggleModal}>
+            <img src={largeImage} alt="largeImage" />
+          </Modal>
+        )}
+        <ToastContainer limit={3} autoClose={2000} transition={Zoom} />
       </Container>
     );
   }

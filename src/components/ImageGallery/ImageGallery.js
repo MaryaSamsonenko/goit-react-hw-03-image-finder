@@ -1,6 +1,6 @@
 import { ImageGalleryItem } from "../ImageGalleryItem/ImageGalleryItem";
 import { ImageGalleryStyle } from "./ImageGallery.styled";
-export const ImageGallery = ({ imageCards }) => {
+export const ImageGallery = ({ imageCards, modalOpen }) => {
   return (
     <ImageGalleryStyle>
       {imageCards.map(({ id, webformatURL, largeImageURL, tags }) => (
@@ -9,6 +9,7 @@ export const ImageGallery = ({ imageCards }) => {
           webformatURL={webformatURL}
           largeImageURL={largeImageURL}
           tags={tags}
+          modalOpen={modalOpen}
         />
       ))}
     </ImageGalleryStyle>
