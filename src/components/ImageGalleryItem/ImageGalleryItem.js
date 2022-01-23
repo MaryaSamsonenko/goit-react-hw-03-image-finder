@@ -1,7 +1,7 @@
+import PropTypes from "prop-types";
 import { ImageGalleryItemStyle, Image } from "./ImageGalleryItem.styled";
 
 export const ImageGalleryItem = ({
-  id,
   webformatURL,
   largeImageURL,
   tags,
@@ -19,4 +19,10 @@ export const ImageGalleryItem = ({
       />
     </ImageGalleryItemStyle>
   );
+};
+ImageGalleryItem.propTypes = {
+  webformatURL: PropTypes.string.isRequired,
+  largeImageURL: PropTypes.string.isRequired,
+  tags: PropTypes.string.isRequired,
+  modalOpen: PropTypes.func.isRequired,
 };
